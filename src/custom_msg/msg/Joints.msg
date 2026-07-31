@@ -1,0 +1,6 @@
+MotorControl gripper
+MotorControl wrist1
+MotorControl wrist2
+MotorControl elbow
+MotorControl shoulder1
+MotorControl shoulder2
