@@ -7,9 +7,11 @@
   <maintainer email="tissya.malik@gmail.com">tissya</maintainer>
   <license>TODO: License declaration</license>
 
-  <exec_depend>ament_index_python</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>controls</exec_depend>
+  <exec_depend>ros_bt</exec_depend>
+  <exec_depend>web_ui</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

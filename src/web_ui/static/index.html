@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARMstrong — Manual Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1a1a;
+      --bg-elevated: #242424;
+      --bg-hover: #2d2d2d;
+      --fg: #f5f5f5;
+      --fg-muted: #a0a0a0;
+      --accent: #007aff;
+      --accent-hover: #0077e6;
+      --accent-pressed: #0066cc;
+      --danger: #ff3b30;
+      --danger-hover: #e6352b;
+      --border: #333;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.3);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+      --transition: 120ms ease;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f5f5f5;
+        --bg-elevated: #ffffff;
+        --bg-hover: #eeeeee;
+        --fg: #1d1d1f;
+        --fg-muted: #6e6e73;
+        --accent: #0071e3;
+        --accent-hover: #0077ed;
+        --accent-pressed: #0066cc;
+        --danger: #ff3b30;
+        --danger-hover: #e6352b;
+        --border: #d2d2d7;
+        --shadow: 0 2px 8px rgba(0,0,0,0.08);
+        --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @font-face {
+      font-family: 'SF Pro';
+      src: local('SF Pro Display'), local('SF Pro Text'),
+           local('.SF NS Display'), local('.SF NS Text'),
+           local('Helvetica Neue'), local('Helvetica');
+      font-weight: 300 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    body {
+      font-family: 'SF Pro', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(26,26,26,0.8);
+      backdrop-filter: saturate(180%) blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    @media (prefers-color-scheme: light) {
+      header { background: rgba(245,245,245,0.8); }
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--fg-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--fg-muted);
+      transition: background var(--transition);
+    }
+
+    .status-dot.connected { background: #34c759; }
+    .status-dot.connecting { background: #ff9f0a; animation: pulse 1.5s infinite; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    main {
+      flex: 1;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .control-group {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: box-shadow var(--transition), border-color var(--transition);
+    }
+
+    .control-group:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent);
+    }
+
+    .group-label {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--fg-muted);
+      margin-bottom: 16px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .btn-row:last-child { margin-bottom: 0; }
+
+    .btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--fg);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition), color var(--transition), transform 80ms ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:hover { background: var(--bg-hover); border-color: var(--accent); }
+    .btn:active { transform: scale(0.98); background: var(--bg); }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .btn.primary:active { background: var(--accent-pressed); border-color: var(--accent-pressed); }
+
+    .btn.danger {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: white;
+    }
+
+    .btn.danger:hover { background: var(--danger-hover); border-color: var(--danger-hover); }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn .key-hint {
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'SF Mono', 'Monaco', monospace;
+      background: var(--bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--fg-muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn.primary .key-hint { background: rgba(0,0,0,0.15); color: rgba(255,255,255,0.7); border-color: transparent; }
+    .btn.danger .key-hint { background: rgba(0,0,0,0.15); color: rgba(255,255,255,0.7); border-color: transparent; }
+
+    @media (prefers-color-scheme: light) {
+      .btn .key-hint { background: var(--bg-elevated); }
+      .btn.primary .key-hint { background: rgba(255,255,255,0.2); }
+      .btn.danger .key-hint { background: rgba(255,255,255,0.2); }
+    }
+
+    .stop-section {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .stop-btn {
+      width: 100%;
+      max-width: 400px;
+      padding: 18px 24px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .footer {
+      padding: 24px 32px;
+      text-align: center;
+      color: var(--fg-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    .keyboard-hint {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      font-family: 'SF Mono', 'Monaco', monospace;
+      font-size: 11px;
+      background: var(--bg);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      header { padding: 16px 20px; }
+      main { padding: 20px; gap: 24px; }
+      .control-grid { grid-template-columns: 1fr; gap: 16px; }
+      .control-group { padding: 20px; }
+      .btn-row { flex-direction: column; gap: 8px; }
+      .btn { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div class="title">ARMstrong Manual Control</div>
+      <div class="status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Connecting…</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="control-grid" id="controlGrid">
+      <!-- Groups injected by JS -->
+    </div>
+
+    <div class="stop-section">
+      <button class="btn danger stop-btn" id="stopBtn" data-key="x">
+        Stop All Motors
+        <span class="key-hint">X</span>
+      </button>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Press keys or click buttons. Matches keyboard teleop keymap.
+    <br>
+    <span class="keyboard-hint">R</span> Gripper Open &nbsp;
+    <span class="keyboard-hint">F</span> Gripper Close &nbsp;
+    <span class="keyboard-hint">T</span> Wrist Pitch Up &nbsp;
+    <span class="keyboard-hint">G</span> Wrist Pitch Down &nbsp;
+    <span class="keyboard-hint">Y</span> Wrist Roll ACW &nbsp;
+    <span class="keyboard-hint">H</span> Wrist Roll CW &nbsp;
+    <span class="keyboard-hint">U</span> Shoulder Pitch Up &nbsp;
+    <span class="keyboard-hint">J</span> Shoulder Pitch Down &nbsp;
+    <span class="keyboard-hint">I</span> Shoulder Roll ACW &nbsp;
+    <span class="keyboard-hint">K</span> Shoulder Roll CW &nbsp;
+    <span class="keyboard-hint">O</span> Elbow Flex &nbsp;
+    <span class="keyboard-hint">L</span> Elbow Extend &nbsp;
+    <span class="keyboard-hint">X</span> Stop All
+  </footer>
+
+  <script>
+    // Key mapping matching control_node_v2.py exactly
+    const GROUPS = [
+      {
+        label: 'Gripper',
+        buttons: [
+          { key: 'r', text: 'Open', primary: true },
+          { key: 'f', text: 'Close' }
+        ]
+      },
+      {
+        label: 'Wrist Pitch',
+        buttons: [
+          { key: 't', text: 'Up', primary: true },
+          { key: 'g', text: 'Down' }
+        ]
+      },
+      {
+        label: 'Wrist Roll',
+        buttons: [
+          { key: 'y', text: 'ACW', primary: true },
+          { key: 'h', text: 'CW' }
+        ]
+      },
+      {
+        label: 'Shoulder Pitch',
+        buttons: [
+          { key: 'u', text: 'Up', primary: true },
+          { key: 'j', text: 'Down' }
+        ]
+      },
+      {
+        label: 'Shoulder Roll',
+        buttons: [
+          { key: 'i', text: 'ACW', primary: true },
+          { key: 'k', text: 'CW' }
+        ]
+      },
+      {
+        label: 'Elbow',
+        buttons: [
+          { key: 'o', text: 'Flex', primary: true },
+          { key: 'l', text: 'Extend' }
+        ]
+      }
+    ];
+
+    const wsUrl = `ws://${location.host}/ws`;
+    let ws = null;
+    let reconnectTimer = null;
+
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const controlGrid = document.getElementById('controlGrid');
+    const stopBtn = document.getElementById('stopBtn');
+
+    function setStatus(state, text) {
+      statusDot.className = 'status-dot';
+      if (state === 'connected') statusDot.classList.add('connected');
+      else if (state === 'connecting') statusDot.classList.add('connecting');
+      statusText.textContent = text;
+    }
+
+    function connect() {
+      setStatus('connecting', 'Connecting…');
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        setStatus('connected', 'Connected');
+        clearTimeout(reconnectTimer);
+      };
+
+      ws.onclose = () => {
+        setStatus('disconnected', 'Disconnected — retrying in 2s');
+        reconnectTimer = setTimeout(connect, 2000);
+      };
+
+      ws.onerror = (e) => {
+        console.error('WS error', e);
+      };
+    }
+
+    function sendKey(key) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ key }));
+      }
+    }
+
+    function createButton(config) {
+      const btn = document.createElement('button');
+      btn.className = `btn${config.primary ? ' primary' : ''}`;
+      btn.dataset.key = config.key;
+      btn.innerHTML = `${config.text}<span class="key-hint">${config.key.toUpperCase()}</span>`;
+      btn.addEventListener('pointerdown', () => sendKey(config.key)); // fires on both mouse and touch
+      return btn;
+    }
+
+    function buildUI() {
+      GROUPS.forEach(group => {
+        const groupEl = document.createElement('div');
+        groupEl.className = 'control-group';
+
+        const label = document.createElement('div');
+        label.className = 'group-label';
+        label.textContent = group.label;
+        groupEl.appendChild(label);
+
+        group.buttons.forEach(btnConfig => {
+          const row = document.createElement('div');
+          row.className = 'btn-row';
+          row.appendChild(createButton(btnConfig));
+          groupEl.appendChild(row);
+        });
+
+        controlGrid.appendChild(groupEl);
+      });
+
+      // Stop button
+      stopBtn.addEventListener('pointerdown', () => sendKey('x'));
+    }
+
+    // Keyboard support (mirrors keyboard_teleop)
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const key = e.key.toLowerCase();
+      const validKeys = ['r','f','t','g','y','h','u','j','i','k','o','l','x','p'];
+      if (validKeys.includes(key)) {
+        e.preventDefault();
+        sendKey(key);
+      }
+    });
+
+    buildUI();
+    connect();
+  </script>
+</body>
+</html>

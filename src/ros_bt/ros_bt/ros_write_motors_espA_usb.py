@@ -22,7 +22,7 @@ class MotorUSBTxEspA(Node):
             10
         )
 
-        # ESP-A → gripper + wrists, now over plain USB serial instead of rfcomm
+        # ESP-A → gripper + wrists over USB serial
         self.ser = serial.Serial(port, baud, timeout=0)
         self.get_logger().info(f'Motor USB TX ESP-A started on {port} @ {baud}')
 

@@ -21,7 +21,7 @@ class MotorUSBTxEspB(Node):
             10
         )
 
-        # ESP-B → elbow + shoulders, now over plain USB serial instead of rfcomm
+        # ESP-B → elbow + shoulders over USB serial
         self.ser = serial.Serial(port, baud, timeout=0)
         self.get_logger().info(f'Motor USB TX ESP-B started on {port} @ {baud}')
 
