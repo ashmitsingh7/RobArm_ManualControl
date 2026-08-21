@@ -25,7 +25,4 @@ if command -v xdg-open >/dev/null 2>&1; then
   (sleep 3; xdg-open "http://localhost:8080" >/dev/null 2>&1) &
 fi
 
-exec ros2 launch arm_bringup robarm27.launch.py \
-  port_a:=/dev/ttyESP_A \
-  port_b:=/dev/ttyESP_B \
-  "$@"
+exec ros2 launch arm_bringup robarm27.launch.py "$@"
