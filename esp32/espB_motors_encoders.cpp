@@ -121,7 +121,7 @@ void setup() {
 void loop() {
 
   /* ---------- MOTOR RX (binary) ---------- */
-  while (SerialBT.available() >= 3) {
+  while (Serial.available() >= 3) {
     uint8_t id  = SerialBT.read();
     uint8_t dir = SerialBT.read();
     uint8_t pwm = SerialBT.read();
